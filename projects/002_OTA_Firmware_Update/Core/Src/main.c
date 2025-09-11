@@ -83,18 +83,18 @@ int _write(int file, char *ptr, int len) {
  */
 static void ota_task( void *pvParameters )
 {
-    (void) pvParameters;
+  (void) pvParameters;
 
-    OTA_Status_t rc = ota_start();
+  OTA_Status_t rc = ota_start();
 
-    if (rc != OTA_SUCCESS) {
-        LogError( ("OTA start failed: %d", rc) );
-        /* TODO: notify a supervisor task or set an event here if needed */
-    } else {
-        LogInfo( ("OTA start succeeded") );
-    }
+  if (rc != OTA_SUCCESS) {
+    LogError( ("OTA start failed: %d", rc) );
+    /* TODO: notify a supervisor task or set an event here if needed */
+  } else {
+    LogInfo( ("OTA start succeeded") );
+  }
 
-    vTaskDelete( NULL );
+  vTaskDelete( NULL );
 }
 
 // this task receives unsolicited MQTT messages from the AWS server
@@ -104,41 +104,36 @@ void mqtt_receive_task(void *parameters)
 
   while (1)
   {
-    xQueueReceive(mqtt_rx_queue, &item, portMAX_DELAY);
+    BaseType_t rc = xQueueReceive(mqtt_rx_queue, &item, portMAX_DELAY);
 
-    if (item.topic_length   > sizeof(item.topic) ||
-        item.payload_length > sizeof(item.payload))
-    {
-        LogError(("mqtt_rx_task: length field overflow"));
-        continue;
-    }
+    configASSERT(rc == pdPASS);
 
     // Check if both topic and payload contain valid data
     if (item.operation == MQTT_OPERATION_RECEIVE &&
         item.topic_length  > 0 &&
         item.payload_length > 0)
     {
-        // Extract topic and payload
-        const char   *topic       = item.topic;
-        size_t        topic_len   = item.topic_length;
-        const uint8_t *payload    = item.payload;
-        size_t        payload_len = item.payload_length;
+      // Extract topic and payload
+      const char   *topic       = item.topic;
+      size_t        topic_len   = item.topic_length;
+      const uint8_t *payload    = item.payload;
+      size_t        payload_len = item.payload_length;
 
-        // Pass to OTA handler
-        bool message_handled = ota_handle_incoming_mqtt_message(
-                                    (char*)topic, topic_len,
-                                    (char*)payload, payload_len);
+      // Pass to OTA handler
+      bool message_handled = ota_handle_incoming_mqtt_message(
+                                  (char*)topic, topic_len,
+                                  (char*)payload, payload_len);
 
-        if (!message_handled)
-        {
-            LogError(("mqtt_receive_task: unhandled message on %.*s",
-                      (int)topic_len, topic));
-        }
+      if (!message_handled)
+      {
+        LogError(("mqtt_receive_task: unhandled message on %.*s",
+                  (int)topic_len, topic));
+      }
     }
     else
     {
-        LogWarn(("mqtt_receive_task: op=%d ignored or empty message",
-                 item.operation));
+      LogWarn(("mqtt_receive_task: op=%d ignored or empty message",
+               item.operation));
     }
   }
 }
@@ -147,92 +142,92 @@ void mqtt_receive_task(void *parameters)
 
 void at_cmd_handle_task(void *parameters)
 {
-    (void)parameters;
+  (void)parameters;
 
-    mqtt_queue_item_t   tx_item, rx_item = { 0 };
-    mqtt_status_t       mqtt_result      = MQTT_ERROR;
-    mqtt_receive_t      incoming_data    = { 0 };
+  mqtt_queue_item_t   tx_item, rx_item = { 0 };
+  mqtt_status_t       mqtt_result      = MQTT_ERROR;
+  mqtt_receive_t      incoming_data    = { 0 };
 
-    /* Static buffers reused for every incoming MQTT frame */
-    static char topic_buf  [ MAX_MQTT_TOPIC_SIZE   ] = { 0 };
-    static char payload_buf[ MAX_MQTT_PAYLOAD_SIZE ] = { 0 };
+  /* Static buffers reused for every incoming MQTT frame */
+  static char topic_buf  [ MAX_MQTT_TOPIC_SIZE   ] = { 0 };
+  static char payload_buf[ MAX_MQTT_PAYLOAD_SIZE ] = { 0 };
 
-    incoming_data.p_payload       = payload_buf;
-    incoming_data.p_topic         = topic_buf;
-    incoming_data.topic_length    = 0;
-    incoming_data.payload_length  = 0;
+  incoming_data.p_payload       = payload_buf;
+  incoming_data.p_topic         = topic_buf;
+  incoming_data.topic_length    = 0;
+  incoming_data.payload_length  = 0;
 
-    for ( ;; )
+  for ( ;; )
+  {
+    /* 1. De-queue MQTT TX queue */
+    if (xQueueReceive(mqtt_tx_queue, &tx_item, 0) == pdPASS)
     {
-        /* 1. De-queue MQTT TX queue */
-        if (xQueueReceive(mqtt_tx_queue, &tx_item, 0) == pdPASS)
+      if (tx_item.operation == MQTT_OPERATION_PUBLISH)
+      {
+        /* 2. Issue MQTT PUBLISH via AT command */
+        mqtt_result = mqtt_publish(tx_item.topic,   tx_item.topic_length,
+                                   tx_item.payload, tx_item.payload_length);
+
+        if (mqtt_result == MQTT_SUCCESS)
         {
-            if (tx_item.operation == MQTT_OPERATION_PUBLISH)
-            {
-                /* 2. Issue MQTT PUBLISH via AT command */
-                mqtt_result = mqtt_publish(tx_item.topic,   tx_item.topic_length,
-                                           tx_item.payload, tx_item.payload_length);
-
-                if (mqtt_result == MQTT_SUCCESS)
-                {
-                    LogInfo(("MQTT Publish successful: Topic='%.*s', Payload='%.*s'",
-                             (int)tx_item.topic_length,  tx_item.topic,
-                             (int)tx_item.payload_length, (char *)tx_item.payload));
-                }
-                else
-                {
-                    LogError(("MQTT Publish failed: Topic='%.*s'",
-                              (int)tx_item.topic_length, tx_item.topic));
-                }
-            }
-            else if (tx_item.operation == MQTT_OPERATION_SUBSCRIBE)
-            {
-                /* 2. Issue MQTT SUBSCRIBE via AT command */
-                mqtt_result = mqtt_subscribe(tx_item.topic, tx_item.topic_length);
-
-                if (mqtt_result == MQTT_SUCCESS)
-                {
-                    LogInfo(("MQTT Subscribe successful: Topic='%.*s'",
-                             (int)tx_item.topic_length, tx_item.topic));
-                }
-                else
-                {
-                    LogError(("MQTT Subscribe failed: Topic='%.*s'",
-                              (int)tx_item.topic_length, tx_item.topic));
-                }
-            }
+          LogInfo(("MQTT Publish successful: Topic='%.*s', \r\nPayload='%.*s'",
+                   (int)tx_item.topic_length,  tx_item.topic,
+                   (int)tx_item.payload_length, (char *)tx_item.payload));
         }
-
-        /* 3. Check for unsolicited MQTT data from ESP32 */
-        esp32_status_t esp32_result = esp32_recv_mqtt_data(&incoming_data);
-
-        if (incoming_data.topic_length >= sizeof(rx_item.topic) &&
-            incoming_data.payload_length >= sizeof(rx_item.payload))
+        else
         {
-            LogError(("ESP32 frame too large – discarded"));
-            continue;
+          LogError(("MQTT Publish failed: Topic='%.*s'",
+                    (int)tx_item.topic_length, tx_item.topic));
         }
+      }
+      else if (tx_item.operation == MQTT_OPERATION_SUBSCRIBE)
+      {
+        /* 2. Issue MQTT SUBSCRIBE via AT command */
+        mqtt_result = mqtt_subscribe(tx_item.topic, tx_item.topic_length);
 
-        if (esp32_result != ESP32_ERROR &&
-            incoming_data.payload_length > 0 &&
-            incoming_data.topic_length   > 0)
+        if (mqtt_result == MQTT_SUCCESS)
         {
-            rx_item.operation      = MQTT_OPERATION_RECEIVE;
-            rx_item.payload_length = incoming_data.payload_length;
-            rx_item.topic_length   = incoming_data.topic_length;
-
-            memcpy(rx_item.payload, incoming_data.p_payload, incoming_data.payload_length);
-            memcpy(rx_item.topic,   incoming_data.p_topic,   incoming_data.topic_length);
-
-            if (xQueueSend(mqtt_rx_queue, &rx_item, 0) == pdPASS)
-            {
-                LogInfo(("Queued MQTT receive: Topic='%.*s'",
-                         (int)rx_item.topic_length, rx_item.topic));
-            }
+          LogInfo(("MQTT Subscribe successful: Topic='%.*s'",
+                   (int)tx_item.topic_length, tx_item.topic));
         }
+        else
+        {
+          LogError(("MQTT Subscribe failed: Topic='%.*s'",
+                    (int)tx_item.topic_length, tx_item.topic));
+        }
+      }
     }
-}
 
+    /* 3. Check for unsolicited MQTT data from ESP32 */
+    esp32_status_t esp32_result = esp32_recv_mqtt_data(&incoming_data);
+
+    if (incoming_data.topic_length >= sizeof(rx_item.topic) &&
+        incoming_data.payload_length >= sizeof(rx_item.payload))
+    {
+      LogError(("ESP32 frame too large – discarded"));
+      continue;
+    }
+
+    if (esp32_result != ESP32_ERROR &&
+        incoming_data.payload_length > 0 &&
+        incoming_data.topic_length   > 0)
+    {
+      rx_item.operation      = MQTT_OPERATION_RECEIVE;
+      rx_item.payload_length = incoming_data.payload_length;
+      rx_item.topic_length   = incoming_data.topic_length;
+
+      memcpy(rx_item.payload, incoming_data.p_payload, incoming_data.payload_length);
+      memcpy(rx_item.topic,   incoming_data.p_topic,   incoming_data.topic_length);
+
+      if (xQueueSend(mqtt_rx_queue, &rx_item, 0) == pdPASS)
+      {
+        LogInfo(("Queued MQTT receive: Topic='%.*s', \r\nPayload='%.*s'",
+                    (int)rx_item.topic_length,   rx_item.topic,
+                    (int)rx_item.payload_length, rx_item.payload));
+      }
+    }
+  }
+}
 
 /* USER CODE END 0 */
 
@@ -310,12 +305,12 @@ int main(void)
 
 
   /*  Step 4: Configure the MQTT client and establish the connection */
-  LogInfo(("Connecting to MQTT broker at %s:%d...", MQTT_BROKER, MQTT_PORT));
+  LogInfo(("Connecting to MQTT broker....."));
   if (mqtt_connect(CLIENT_ID, MQTT_BROKER, MQTT_PORT) != MQTT_SUCCESS) {
     LogError(("MQTT connection failed."));
     Error_Handler();
   }
-  LogInfo(("Successfully connected to MQTT broker: %s", MQTT_BROKER));
+  LogInfo(("Successfully connected to MQTT broker"));
 
 
   /* Create queues */

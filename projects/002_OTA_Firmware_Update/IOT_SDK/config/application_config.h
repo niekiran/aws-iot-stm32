@@ -37,6 +37,7 @@
 
 
 #define MQTT_BROKER                        "a1xj5b9bzz0f3a-ats.iot.ap-south-1.amazonaws.com"
+
 #define MQTT_PORT                          8883
 
 #define CLIENT_ID                          "my_iot_device_1"

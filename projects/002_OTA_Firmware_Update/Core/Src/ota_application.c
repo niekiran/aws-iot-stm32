@@ -48,88 +48,86 @@ static bool job_handler_chain( char * message,
 
 extern QueueHandle_t mqtt_tx_queue;
 
+/*=====================================================================================================================*/
+/**
+ * @brief Starts the OTA process by publishing a
+ *        StartNextPendingJobExecution request to AWS IoT Jobs.
+ *
+ * This function builds the "start-next" topic and message using the AWS IoT
+ * Jobs library and publishes it to the MQTT TX queue. The cloud responds
+ * with details of the next pending OTA job, if available.
+ *
+ * @return OTA_Status_t
+ *         - OTA_SUCCESS on success
+ *         - OTA_ERR_TOPIC_BUILD if topic generation fails
+ *         - OTA_ERR_MSG_TRUNC if job request message overflow
+ *         - OTA_ERR_QUEUE_FULL if publish enqueue fails
+ */
 OTA_Status_t  ota_start( void ) {
 
   char topic_buf[ TOPIC_BUFFER_SIZE + 1 ] = { 0 };
   char msg_buf  [ START_JOB_MSG_LENGTH   ] = { 0 };
   size_t topic_len, msg_len;
-  mqtt_queue_item_t sub_item = { 0 }, pub_item = { 0 };
+  mqtt_queue_item_t pub_item = { 0 };
 
   /*
-  * Subscribe to the AWS IoT Jobs notify-next topic.
-  * This will passively receive job details when a new job is created for this thing.
-  */
-  topic_len = snprintf(topic_buf, sizeof(topic_buf),
-                      JOBS_API_SUBSCRIBE_NEXTJOBCHANGED(CLIENT_ID));
+   * Step 1:
+   * AWS IoT Jobs library:
+   * Creates the topic string for a StartNextPendingJobExecution request.
+   * It used to check if any pending jobs are available.
+   */
+  if (Jobs_StartNext( topic_buf, sizeof(topic_buf),
+                      CLIENT_ID, strlen(CLIENT_ID),
+                      &topic_len) != JobsSuccess) {
 
-  if (topic_len >= sizeof(topic_buf)) {
-     LogError(("Subscribe topic truncated"));
-     return OTA_ERR_TOPIC_TRUNC;
-  }
-
-  sub_item.operation    = MQTT_OPERATION_SUBSCRIBE;
-  sub_item.topic_length = topic_len;
-  memcpy(sub_item.topic, topic_buf, topic_len + 1U);
-
-  // Send SUBSCRIBE to MQTT TX queue
-  if (xQueueSend(mqtt_tx_queue, &sub_item, 0) != pdPASS) {
-      LogError(("SUBSCRIBE enqueue failed"));
-      return OTA_ERR_QUEUE_FULL;
-  }
-
-  /*
-  * AWS IoT Jobs library:
-  * Creates the topic string for a StartNextPendingJobExecution request.
-  * It used to check if any pending jobs are available.
-  */
-  if (Jobs_StartNext(topic_buf, sizeof(topic_buf),
-                    CLIENT_ID, strlen(CLIENT_ID),
-                    &topic_len) != JobsSuccess)
-  {
      LogError(("Jobs_StartNext failed"));
      return OTA_ERR_TOPIC_BUILD;
   }
 
   /*
-  * AWS IoT Jobs library:
-  * Creates the message string for a StartNextPendingJobExecution request.
-  * It will be sent on the topic created in the previous step.
-  */
-  msg_len = Jobs_StartNextMsg(OTA_CLIENT_TOKEN,
+   * Step 2:
+   * AWS IoT Jobs library:
+   * Creates the message string for a StartNextPendingJobExecution request.
+   * It will be sent on the topic created in the previous step.
+   */
+  msg_len = Jobs_StartNextMsg( OTA_CLIENT_TOKEN,
                                sizeof(OTA_CLIENT_TOKEN) - 1U,
                                msg_buf, sizeof(msg_buf));
 
-   if (msg_len > sizeof(msg_buf)) {
-       LogError(("StartNextMsg truncated"));
-       return OTA_ERR_MSG_TRUNC;
-   }
+  if (msg_len > sizeof(msg_buf)) {
 
-
+    LogError(("StartNextMsg truncated"));
+    return OTA_ERR_MSG_TRUNC;
+  }
 
   // Prepare queue item
-   pub_item.operation      = MQTT_OPERATION_PUBLISH;
-   pub_item.topic_length   = topic_len;
-   pub_item.payload_length = msg_len;
-   memcpy(pub_item.topic, topic_buf, topic_len + 1U);
-   memcpy(pub_item.payload, msg_buf, msg_len);
-
-   if (xQueueSend(mqtt_tx_queue, &pub_item, 0) != pdPASS) {
-       LogError(("PUBLISH enqueue failed"));
-       return OTA_ERR_QUEUE_FULL;
-   }
-
+  pub_item.operation      = MQTT_OPERATION_PUBLISH;
+  pub_item.topic_length   = topic_len;
+  pub_item.payload_length = msg_len;
+  memcpy(pub_item.topic, topic_buf, topic_len + 1U);
+  memcpy(pub_item.payload, msg_buf, msg_len);
 
   // Send to TX queue
-   if (xQueueSend(mqtt_tx_queue, &pub_item, 0) != pdPASS) {
-       LogError(("PUBLISH enqueue failed"));
-       return OTA_ERR_QUEUE_FULL;
-   }
+  if (xQueueSend(mqtt_tx_queue, &pub_item, 0) != pdPASS) {
+    LogError(("PUBLISH enqueue failed"));
+    return OTA_ERR_QUEUE_FULL;
+  }
 
   return OTA_SUCCESS;
-
-
 }
 
+
+
+/**
+ * @brief Handles incoming MQTT messages related to OTA jobs and data blocks.
+ *
+ * @param[in] topic          The topic string of the MQTT message.
+ * @param[in] topic_length   Length of the topic string.
+ * @param[in] message        Payload of the MQTT message.
+ * @param[in] message_length Length of the message.
+ *
+ * @return true if the message was handled, false otherwise.
+ */
 /* Implemented for use by the MQTT library */
 bool ota_handle_incoming_mqtt_message(  char * topic,
                                        size_t topic_length,
@@ -141,6 +139,7 @@ bool ota_handle_incoming_mqtt_message(  char * topic,
   int32_t block_id = 0;
   int32_t block_size = 0;
 
+  /* Check for Job Metadata */
   handled = job_metadata_handler_chain( topic, topic_length );
 
   if( !handled ) {
@@ -195,11 +194,20 @@ bool ota_handle_incoming_mqtt_message(  char * topic,
                 topic,
                 ( unsigned int ) message_length,
                 ( char * ) message ) );
-    }
+  }
 
-   return handled;
+  return handled;
 }
 
+/**
+ * @brief Processes OTA job metadata messages and clears global job ID
+ *        if the job update status is accepted or rejected.
+ *
+ * @param[in] topic         The MQTT topic.
+ * @param[in] topic_length  Length of topic string.
+ *
+ * @return true if the topic was handled, false otherwise.
+ */
 static bool job_metadata_handler_chain( char * topic,
                                     size_t topic_length ) {
 
@@ -207,6 +215,7 @@ static bool job_metadata_handler_chain( char * topic,
 
   if( global_job_id[ 0 ] != 0 ) {
 
+    /* Check if the incoming message corresponds to an "update/accepted" topic for the current job. */
     handled = Jobs_IsJobUpdateStatus( topic,
                                       topic_length,
                                       ( const char * ) &global_job_id,
@@ -222,6 +231,7 @@ static bool job_metadata_handler_chain( char * topic,
       global_job_id[ 0 ] = 0;
     } else {
 
+      /* Check if the incoming message corresponds to an "update/rejected" topic for the current job. */
       handled = Jobs_IsJobUpdateStatus( topic,
                                         topic_length,
                                         ( const char * ) &global_job_id,
@@ -242,16 +252,21 @@ static bool job_metadata_handler_chain( char * topic,
   return handled;
 }
 
+/**
+ * @brief Processes job file details extracted from the job document.
+ *
+ * @param[in] params  Parsed job file parameters.
+ */
 /* Custom OTA library callback */
 static void process_job_file( custom_job_doc_fields_t * params )
 {
   num_of_blocks_remaining = params->file_size /
                             mqttFileDownloader_CONFIG_BLOCK_SIZE;
   num_of_blocks_remaining += ( params->file_size %
-                            mqttFileDownloader_CONFIG_BLOCK_SIZE >
-                            0 )
-                            ? 1
-                            : 0;
+                               mqttFileDownloader_CONFIG_BLOCK_SIZE >
+                               0 )
+                               ? 1
+                               : 0;
 
   current_file_id = params->file_id;
   current_block_offset = 0;
@@ -291,6 +306,15 @@ static void process_job_file( custom_job_doc_fields_t * params )
   request_data_block();
 }
 
+/**
+ * @brief Handles parsing and processing of the OTA job document.
+ *
+ * @param[in] message        Raw job execution message.
+ * @param[in] message_length Length of job message.
+ *
+ * @return true if all job files were processed successfully,
+ *         false otherwise.
+ */
 static bool job_handler_chain( char * message,
                                size_t message_length ) {
 
@@ -308,7 +332,7 @@ static bool job_handler_chain( char * message,
 
   /*
   * AWS IoT Jobs library:
-  * Extracting the job ID from the received OTA job document.
+  * Extracting the job ID from the jobs message recevied from AWS IoT core.
   */
   job_id_length = Jobs_GetJobId( message, message_length, ( const char ** ) &jobId );
 
@@ -351,6 +375,9 @@ static bool job_handler_chain( char * message,
   return file_index == 0;
 }
 
+/**
+ * @brief Sends a request to AWS IoT Core for the next OTA data block.
+ */
 static void request_data_block( void ) {
 
   char get_stream_request[ GET_STREAM_REQUEST_BUFFER_SIZE ];
@@ -387,6 +414,13 @@ static void request_data_block( void ) {
   }
 }
 
+
+/**
+ * @brief Handles incoming OTA data block from MQTT Streams and writes it to flash.
+ *
+ * @param[in] data        Pointer to received data block.
+ * @param[in] data_length Length of the data block in bytes.
+ */
 uint32_t flash_write_address = USER_FLASH_SECOND_SECTOR_ADDRESS;
 /* Implemented for the MQTT Streams library */
 static void handle_mqtt_streams_block_arrived( uint8_t * data,
@@ -416,6 +450,10 @@ static void handle_mqtt_streams_block_arrived( uint8_t * data,
   }
 }
 
+/**
+ * @brief Transfers control from the bootloader to the user application
+ *        located at USER_FLASH_FIRST_SECTOR_ADDRESS.
+ */
 static void jump_to_application(void) {
 
   LogInfo( ("Gonna Jump to Application\r\n"));
@@ -449,6 +487,10 @@ static void jump_to_application(void) {
   }
 }
 
+/**
+ * @brief Runs the user application by jumping to its reset vector.
+ *        Performs a system reset if the application fails to start.
+ */
 void run_application() {
   jump_to_application();
   //printf("Resetting system\r\n");
@@ -456,7 +498,16 @@ void run_application() {
   HAL_NVIC_SystemReset();
 }
 
-static bool copy_firmware_to_second_sector( uint32_t src_address,
+/**
+ * @brief Copies firmware from one flash sector to another.
+ *
+ * @param[in] src_address   Source flash address.
+ * @param[in] dest_address  Destination flash address.
+ * @param[in] length        Number of bytes to copy.
+ *
+ * @return true on success, false on failure.
+ */
+static bool copy_firmware_to_ota_application_sector1( uint32_t src_address,
                                             uint32_t dest_address,
                                             uint32_t length) {
 
@@ -485,6 +536,10 @@ static bool copy_firmware_to_second_sector( uint32_t src_address,
   return true;
 }
 
+/**
+ * @brief Completes the OTA download process, validates and copies firmware
+ *        to application sector, updates job status, and runs the new application.
+ */
 static void finish_download() {
 
   /* TODO: Do something with the completed download */
@@ -495,38 +550,7 @@ static void finish_download() {
   mqtt_queue_item_t queue_item = { 0 };
 
 
-  if (!copy_firmware_to_second_sector(USER_FLASH_SECOND_SECTOR_ADDRESS, USER_FLASH_FIRST_SECTOR_ADDRESS , total_bytes_received)){
-    LogError(("Failed to copy firmware to second sector! Aborting OTA update."));
-
-    /*
-     * AWS IoT Jobs library:
-     * Creating the MQTT topic to update the status of OTA job.
-     */
-    Jobs_Update(topic_buffer, TOPIC_BUFFER_SIZE, CLIENT_ID, strlen(CLIENT_ID),
-                global_job_id, strlen(global_job_id), &topic_buffer_length);
-
-    /*
-     * AWS IoT Jobs library:
-     * Creating the message which contains the status of OTA job.
-     * It will be published on the topic created in the previous step.
-     */
-    size_t message_buffer_length = Jobs_UpdateMsg(Failed, "CRC Error", 8U,
-                                                 message_buffer, UPDATE_JOB_MSG_LENGTH);
-    mqtt_publish(topic_buffer, topic_buffer_length, (uint8_t *)message_buffer, message_buffer_length);
-
-    // Populate queue item
-    queue_item.operation = MQTT_OPERATION_PUBLISH;
-    queue_item.payload_length = message_buffer_length;
-    queue_item.topic_length = topic_buffer_length;
-    memcpy(queue_item.payload, message_buffer, message_buffer_length );
-    memcpy(queue_item.topic, topic_buffer, topic_buffer_length );
-
-    // Send to TX queue
-    if (xQueueSend(mqtt_tx_queue, &queue_item, portMAX_DELAY) == pdPASS) {
-      LogInfo(("Queued MQTT publish: Topic='%s'", topic_buffer));
-    }
-  } else {
-
+  if (copy_firmware_to_ota_application_sector1(USER_FLASH_SECOND_SECTOR_ADDRESS, USER_FLASH_FIRST_SECTOR_ADDRESS , total_bytes_received)){
     LogInfo(("Flash complete.... Jumping to User App"));
 
     /*
@@ -570,5 +594,38 @@ static void finish_download() {
     LogInfo( ("\033[1;32mOTA Completed successfully!\033[0m\n" ) );
 
     run_application();
+
+
+  } else {
+
+    LogError(("Failed to copy firmware to second sector! Aborting OTA update."));
+
+    /*
+     * AWS IoT Jobs library:
+     * Creating the MQTT topic to update the status of OTA job.
+     */
+    Jobs_Update(topic_buffer, TOPIC_BUFFER_SIZE, CLIENT_ID, strlen(CLIENT_ID),
+                global_job_id, strlen(global_job_id), &topic_buffer_length);
+
+    /*
+     * AWS IoT Jobs library:
+     * Creating the message which contains the status of OTA job.
+     * It will be published on the topic created in the previous step.
+     */
+    size_t message_buffer_length = Jobs_UpdateMsg(Failed, "CRC Error", 8U,
+                                                 message_buffer, UPDATE_JOB_MSG_LENGTH);
+    mqtt_publish(topic_buffer, topic_buffer_length, (uint8_t *)message_buffer, message_buffer_length);
+
+    // Populate queue item
+    queue_item.operation = MQTT_OPERATION_PUBLISH;
+    queue_item.payload_length = message_buffer_length;
+    queue_item.topic_length = topic_buffer_length;
+    memcpy(queue_item.payload, message_buffer, message_buffer_length );
+    memcpy(queue_item.topic, topic_buffer, topic_buffer_length );
+
+    // Send to TX queue
+    if (xQueueSend(mqtt_tx_queue, &queue_item, portMAX_DELAY) == pdPASS) {
+      LogInfo(("Queued MQTT publish: Topic='%s'", topic_buffer));
+    }
   }
 }
