@@ -1,0 +1,15 @@
+# Build outputs
+*.bin
+*.elf
+*.map
+*.list
+!objects.list
+*.d
+*.o
+*.su
+
+# Test results
+test-results*.xml
+
+# Eclipse workspace metadata (scoped)
+projects-and-examples/.metadata/
