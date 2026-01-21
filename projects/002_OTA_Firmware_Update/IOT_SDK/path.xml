@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cdtprojectproperties>
+  <section name="org.eclipse.cdt.internal.ui.wizards.settingswizards.IncludePaths">
+    <language id="org.eclipse.cdt.core.assembly" name="s,S"/>
+    <language id="org.eclipse.cdt.core.gcc" name="C Source File">
+      <includepath>Core/Inc</includepath>
+      <includepath>Drivers/STM32F4xx_HAL_Driver/Inc</includepath>
+      <includepath>Drivers/STM32F4xx_HAL_Driver/Inc/Legacy</includepath>
+      <includepath>Drivers/CMSIS/Device/ST/STM32F4xx/Include</includepath>
+      <includepath>Drivers/CMSIS/Include</includepath>
+      <includepath workspace_path="true">/${ProjName}/Core/Src</includepath>
+      <includepath workspace_path="true">/${ProjName}/IOT_SDK/BSP</includepath>
+      <includepath workspace_path="true">/${ProjName}/IOT_SDK/BSP/utils</includepath>
+      <includepath workspace_path="true">/${ProjName}/IOT_SDK/config</includepath>
+      <includepath workspace_path="true">/${ProjName}/IOT_SDK/mqtt_helper</includepath>
+      <includepath workspace_path="true">/${ProjName}/IOT_SDK/Thirdparty/FreeRTOS-Kernel/include</includepath>
+      <includepath workspace_path="true">/${ProjName}/IOT_SDK/Thirdparty/FreeRTOS-Kernel/portable/GCC/ARM_CM4F</includepath>
+      <includepath workspace_path="true">/${ProjName/IOT_SDK}/Thirdparty/FreeRTOS-Kernel</includepath>
+      <includepath workspace_path="true">/${ProjName}/IOT_SDK/Thirdparty/aws-iot-device-sdk-libraries/standard/coreJSON/source/include</includepath>
+      <includepath workspace_path="true">/${ProjName}/IOT_SDK/Thirdparty/aws-iot-device-sdk-libraries/standard/logging-stack</includepath>
+      <includepath workspace_path="true">/${ProjName}/IOT_SDK/Thirdparty/aws-iot-device-sdk-libraries/aws/aws-iot-core-mqtt-file-streams/source/include</includepath>
+      <includepath workspace_path="true">/${ProjName}/IOT_SDK/Thirdparty/aws-iot-device-sdk-libraries/3rdparty/tinycbor/src</includepath>
+      <includepath workspace_path="true">/${ProjName}/IOT_SDK/Thirdparty/aws-iot-device-sdk-libraries/aws/Jobs-for-AWS-IoT-embedded-sdk/source/include</includepath>
+      <includepath workspace_path="true">/${ProjName}/IOT_SDK/Thirdparty/aws-iot-device-sdk-libraries/aws/Jobs-for-AWS-IoT-embedded-sdk/source/otaJobParser/include</includepath>
+      <includepath>Middlewares/Third_Party/Infineon_Wireless_Connectivity/aws-iot-device-sdk-embedded-C/platform/include/</includepath>
+      <includepath>Middlewares/Third_Party/Infineon_Wireless_Connectivity/aws-iot-device-sdk-embedded-C/libraries/standard/coreMQTT/</includepath>
+      <includepath>Middlewares/Third_Party/Infineon_Wireless_Connectivity/aws-iot-device-sdk-embedded-C/libraries/standard/coreMQTT/source/include/</includepath>
+      <includepath>Middlewares/Third_Party/Infineon_Wireless_Connectivity/aws-iot-device-sdk-embedded-C/libraries/standard/coreMQTT/source/interface/</includepath>
+      <includepath>Middlewares/Third_Party/Infineon_Wireless_Connectivity/aws-iot-device-sdk-embedded-C/libraries/standard/backoffAlgorithm/source/include/</includepath>
+    </language>
+    <language name="Object File"/>
+  </section>
+  <section name="org.eclipse.cdt.internal.ui.wizards.settingswizards.Macros">
+    <language id="org.eclipse.cdt.core.assembly" name="s,S">
+      <macro>
+        <name>DEBUG</name>
+        <value/>
+      </macro>
+    </language>
+    <language id="org.eclipse.cdt.core.gcc" name="C Source File">
+      <macro>
+        <name>DEBUG</name>
+        <value/>
+      </macro>
+      <macro>
+        <name>USE_HAL_DRIVER</name>
+        <value/>
+      </macro>
+      <macro>
+        <name>STM32F446xx</name>
+        <value/>
+      </macro>
+      <macro>
+        <name>MBEDTLS_CONFIG_FILE</name>
+        <value>"mbedtls_config.h"</value>
+      </macro>
+    </language>
+    <language name="Object File"/>
+  </section>
+</cdtprojectproperties>

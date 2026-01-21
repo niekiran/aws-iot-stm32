@@ -1,0 +1,11 @@
+../Core/Src/ota_application.c:63:14:ota_start	4
+../Core/Src/ota_application.c:125:6:ota_handle_incoming_mqtt_message	5
+../Core/Src/ota_application.c:193:13:job_metadata_handler_chain	4
+../Core/Src/ota_application.c:234:13:process_job_file	3
+../Core/Src/ota_application.c:284:13:job_handler_chain	6
+../Core/Src/ota_application.c:346:13:request_data_block	2
+../Core/Src/ota_application.c:386:13:handle_mqtt_streams_block_arrived	3
+../Core/Src/ota_application.c:415:13:jump_to_application	2
+../Core/Src/ota_application.c:453:6:run_application	1
+../Core/Src/ota_application.c:469:13:copy_firmware_to_ota_application_sector1	3
+../Core/Src/ota_application.c:502:13:finish_download	4

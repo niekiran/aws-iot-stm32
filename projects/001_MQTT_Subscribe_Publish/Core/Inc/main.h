@@ -52,7 +52,7 @@ typedef struct {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-#define OTA_APP 1
+#define USE_OTA
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/

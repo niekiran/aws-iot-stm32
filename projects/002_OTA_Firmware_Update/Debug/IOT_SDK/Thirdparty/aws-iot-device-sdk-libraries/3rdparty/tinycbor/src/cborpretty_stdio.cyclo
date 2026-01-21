@@ -1,0 +1,3 @@
+../IOT_SDK/Thirdparty/aws-iot-device-sdk-libraries/3rdparty/tinycbor/src/cborpretty_stdio.c:29:18:cbor_fprintf	1
+../IOT_SDK/Thirdparty/aws-iot-device-sdk-libraries/3rdparty/tinycbor/src/cborpretty_stdio.c:63:11:cbor_value_to_pretty_advance	1
+../IOT_SDK/Thirdparty/aws-iot-device-sdk-libraries/3rdparty/tinycbor/src/cborpretty_stdio.c:83:11:cbor_value_to_pretty_advance_flags	1

@@ -50,11 +50,9 @@ UART_HandleTypeDef huart4;
 UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_uart4_rx;
 
+/* USER CODE BEGIN PV */
 QueueHandle_t mqtt_tx_queue;
 QueueHandle_t mqtt_rx_queue;
-
-
-/* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
 
@@ -128,13 +126,6 @@ void mqtt_receive_task(void *parameters) {
     if (item.operation == MQTT_OPERATION_RECEIVE &&
         item.topic_length   > 0 &&
         item.payload_length > 0) {
-
-      if (strstr(item.topic, "/jobs/notify-next") != NULL) {
-
-         LogInfo(("OTA job notification received."));
-         LogInfo(("Rebooting to bootloader for OTA update..."));
-         HAL_NVIC_SystemReset();
-      }
 
       // Log the received message
       LogInfo(("\r\nReceived message:"));
@@ -259,7 +250,7 @@ int main(void)
   }
   LogInfo(("Wi-Fi module initialized successfully.\n"));
 
-#ifndef OTA_APP
+#ifndef USE_OTA
   /* Step 2: Connect to Wi-Fi network*/
   LogInfo(("Joining Access Point: '%s' ...", WIFI_SSID));
   /* Keep attempting to connect to the specified Wi-Fi access point until
