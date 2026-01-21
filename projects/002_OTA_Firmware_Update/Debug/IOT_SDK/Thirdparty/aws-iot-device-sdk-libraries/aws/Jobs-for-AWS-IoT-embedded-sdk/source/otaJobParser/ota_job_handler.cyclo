@@ -1,0 +1,3 @@
+../IOT_SDK/Thirdparty/aws-iot-device-sdk-libraries/aws/Jobs-for-AWS-IoT-embedded-sdk/source/otaJobParser/ota_job_handler.c:34:8:otaParser_parseJobDocFile	7
+../IOT_SDK/Thirdparty/aws-iot-device-sdk-libraries/aws/Jobs-for-AWS-IoT-embedded-sdk/source/otaJobParser/ota_job_handler.c:61:13:isFreeRTOSOtaJob	1
+../IOT_SDK/Thirdparty/aws-iot-device-sdk-libraries/aws/Jobs-for-AWS-IoT-embedded-sdk/source/otaJobParser/ota_job_handler.c:81:13:isJobFileIndexValid	2
