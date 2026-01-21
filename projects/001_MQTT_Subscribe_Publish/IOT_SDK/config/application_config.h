@@ -32,13 +32,10 @@
 
 #include "logging_stack.h"
 
-#define WIFI_SSID                          "Bharatisoft"
-#define WIFI_PASSWORD                      "Kiran@123"
+#define WIFI_SSID                          "BHARATISOFT 2025"
+#define WIFI_PASSWORD                      "***********"
 
-//#define WIFI_SSID                          "OnePlus 13R 2488"
-//#define WIFI_PASSWORD                      "kiran123"
-
-#define MQTT_BROKER                        "a1xj5b9bzz0f3a-ats.iot.ap-south-1.amazonaws.com"
+#define MQTT_BROKER                        "****************.iot.ap-south-1.amazonaws.com"
 #define MQTT_PORT                          8883
 
 #define CLIENT_ID                          "my_iot_device_1"
@@ -47,7 +44,7 @@
 
 #define SENSOR_DATA_TOPIC                  "sensors/room1/temp_humidity"
 
-#define MQTT_PUBLISH_TIME_BETWEEN_MS       ( 5000U )
+#define MQTT_PUBLISH_TIME_BETWEEN_MS       ( 10000U )
 
 #define MAX_MQTT_PAYLOAD_SIZE              512
 #define MAX_MQTT_TOPIC_SIZE                80

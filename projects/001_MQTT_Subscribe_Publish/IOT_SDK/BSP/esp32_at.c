@@ -44,7 +44,7 @@ esp32_status_t esp32_init(void) {
     return ESP32_ERROR;
   }
 
-#ifndef OTA_APP
+#ifndef USE_OTA
   /* Switch off the echo mode */
   /* Construct the command */
   memset(at_cmd, '\0', MAX_AT_CMD_SIZE);
@@ -67,6 +67,7 @@ esp32_status_t esp32_init(void) {
   /* Send the command */
   ret = run_at_cmd((uint8_t *)at_cmd, strlen((char *)at_cmd),
                     (uint8_t *)AT_OK_STRING);
+
 #endif
   return ret;
 }
