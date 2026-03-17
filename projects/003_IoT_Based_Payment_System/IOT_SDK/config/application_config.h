@@ -58,4 +58,9 @@
 #define USER_FLASH_LAST_SECTOR_ADDRESS     0x081C0000
 #define USER_FLASH_END_ADDRESS             0x081FFFFF
 
+#define API_SERVER                         "api.nytimes.com"
+#define API_PORT                           443
+#define API_KEY                            "l9GhIoEM7QppS9aMx91AqsCe1iyADu567hwskSle7G4AZTfD"
+
+
 #endif /* INC_APPLICATION_CONFIG_H_ */

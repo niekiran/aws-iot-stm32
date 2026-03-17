@@ -1,0 +1,5 @@
+Core/Src/parser.o: ../Core/Src/parser.c \
+ C:/Users/bhara/STM32CubeIDE/aws-iot-stm32/projects/004_News_Ticker/IOT_SDK/Thirdparty/aws-iot-device-sdk-libraries/standard/coreJSON/source/include/core_json.h \
+ ../Core/Inc/parser.h
+C:/Users/bhara/STM32CubeIDE/aws-iot-stm32/projects/004_News_Ticker/IOT_SDK/Thirdparty/aws-iot-device-sdk-libraries/standard/coreJSON/source/include/core_json.h:
+../Core/Inc/parser.h:

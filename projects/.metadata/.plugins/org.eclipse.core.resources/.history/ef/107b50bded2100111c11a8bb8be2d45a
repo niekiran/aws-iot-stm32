@@ -1,0 +1,1 @@
+../IOT_SDK/Thirdparty/aws-iot-device-sdk-libraries/3rdparty/tinycbor/src/cborencoder_close_container_checked.c:52:11:cbor_encoder_close_container_checked	16	static

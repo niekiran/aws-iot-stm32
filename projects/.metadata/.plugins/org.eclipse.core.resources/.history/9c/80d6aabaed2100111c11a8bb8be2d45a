@@ -1,0 +1,8 @@
+../IOT_SDK/BSP/esp32_at_io.c:35:8:esp32_io_init	8	static
+../IOT_SDK/BSP/esp32_at_io.c:53:6:esp32_io_deinit	8	static
+../IOT_SDK/BSP/esp32_at_io.c:64:8:esp32_io_send	16	static
+../IOT_SDK/BSP/esp32_at_io.c:78:9:esp32_io_recv	24	static
+../IOT_SDK/BSP/esp32_at_io.c:104:9:esp32_io_recv_nb	24	static
+../IOT_SDK/BSP/esp32_at_io.c:131:6:HAL_UARTEx_RxEventCallback	16	static
+../IOT_SDK/BSP/esp32_at_io.c:149:6:HAL_UART_ErrorCallback	16	static
+../IOT_SDK/BSP/esp32_at_io.c:160:13:esp32_io_error_handler	8	static

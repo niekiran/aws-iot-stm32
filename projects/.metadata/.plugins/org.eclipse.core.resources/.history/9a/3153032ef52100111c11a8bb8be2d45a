@@ -1,0 +1,3 @@
+../IOT_SDK/BSP/utils/sensor_util.c:28:5:init_temperature_humidity_sensor	16	static
+../IOT_SDK/BSP/utils/sensor_util.c:43:6:get_temperature_reading	16	static
+../IOT_SDK/BSP/utils/sensor_util.c:58:6:get_humidity_reading	16	static

@@ -1,0 +1,2 @@
+../IOT_SDK/BSP/utils/oled_util.c:17:6:oled_show_message	16	static
+../IOT_SDK/BSP/utils/oled_util.c:27:6:oled_show_status	16	static

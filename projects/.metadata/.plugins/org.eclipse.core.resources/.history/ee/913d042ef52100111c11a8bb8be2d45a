@@ -1,0 +1,2 @@
+../IOT_SDK/Thirdparty/FreeRTOS-Kernel/freertos_hooks.c:14:6:vApplicationGetTimerTaskMemory	1
+../IOT_SDK/Thirdparty/FreeRTOS-Kernel/freertos_hooks.c:27:6:vApplicationGetIdleTaskMemory	1

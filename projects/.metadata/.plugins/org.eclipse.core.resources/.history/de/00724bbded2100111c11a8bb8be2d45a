@@ -1,0 +1,12 @@
+../IOT_SDK/Thirdparty/FreeRTOS-Kernel/event_groups.c:86:28:xEventGroupCreateStatic	32	static,ignoring_inline_asm
+../IOT_SDK/Thirdparty/FreeRTOS-Kernel/event_groups.c:145:28:xEventGroupCreate	16	static
+../IOT_SDK/Thirdparty/FreeRTOS-Kernel/event_groups.c:185:17:xEventGroupSync	56	static,ignoring_inline_asm
+../IOT_SDK/Thirdparty/FreeRTOS-Kernel/event_groups.c:312:17:xEventGroupWaitBits	72	static,ignoring_inline_asm
+../IOT_SDK/Thirdparty/FreeRTOS-Kernel/event_groups.c:472:17:xEventGroupClearBits	32	static,ignoring_inline_asm
+../IOT_SDK/Thirdparty/FreeRTOS-Kernel/event_groups.c:524:17:xEventGroupGetBitsFromISR	40	static,ignoring_inline_asm
+../IOT_SDK/Thirdparty/FreeRTOS-Kernel/event_groups.c:547:17:xEventGroupSetBits	64	static,ignoring_inline_asm
+../IOT_SDK/Thirdparty/FreeRTOS-Kernel/event_groups.c:647:10:vEventGroupDelete	32	static,ignoring_inline_asm
+../IOT_SDK/Thirdparty/FreeRTOS-Kernel/event_groups.c:698:20:xEventGroupGetStaticBuffer	32	static,ignoring_inline_asm
+../IOT_SDK/Thirdparty/FreeRTOS-Kernel/event_groups.c:745:10:vEventGroupSetBitsCallback	16	static
+../IOT_SDK/Thirdparty/FreeRTOS-Kernel/event_groups.c:761:10:vEventGroupClearBitsCallback	16	static
+../IOT_SDK/Thirdparty/FreeRTOS-Kernel/event_groups.c:775:23:prvTestWaitCondition	32	static
