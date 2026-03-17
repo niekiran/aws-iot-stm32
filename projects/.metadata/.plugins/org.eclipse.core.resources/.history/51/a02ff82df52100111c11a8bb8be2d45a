@@ -1,0 +1,10 @@
+../Core/Src/app.c:139:5:connect_to_server	2
+../Core/Src/app.c:159:13:show_startup_screen	1
+../Core/Src/app.c:176:13:draw_menu_item	4
+../Core/Src/app.c:203:13:show_menu	4
+../Core/Src/app.c:233:13:display_section_title	1
+../Core/Src/app.c:258:6:construct_api_request	1
+../Core/Src/app.c:278:13:get_news_from	3
+../Core/Src/app.c:295:13:fetch_news_section	3
+../Core/Src/app.c:328:13:handle_buttons	9
+../Core/Src/app.c:377:6:main_app	6

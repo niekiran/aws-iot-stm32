@@ -1,0 +1,20 @@
+{
+    "lib_name": "AWS IOT Core MQTT File Stream Embedded C",
+    "src": [
+        "source/MQTTFileDownloader.c",
+        "source/MQTTFileDownloader_cbor.c",
+        "source/MQTTFileDownloader_base64.c",
+        "coreJSON/source/core_json.c",
+        "tinycbor/src/cborparser.c",
+        "tinycbor/src/cborencoder.c",
+        "tinycbor/src/cborencoder_close_container_checked.c"
+    ],
+    "include": [
+        "source/include",
+        "coreJSON/source/include",
+        "tinycbor/src"
+    ],
+    "compiler_flags": [
+        "MQTT_STREAMS_DO_NOT_USE_CUSTOM_CONFIG"
+    ]
+}
