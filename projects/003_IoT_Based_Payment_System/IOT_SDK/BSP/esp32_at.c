@@ -216,7 +216,7 @@ esp32_status_t esp32_establish_connection(const esp32_connection_info_t *connect
 
   /* Construct the CIPSTART command */
   memset(at_cmd, '\0', MAX_AT_CMD_SIZE);
-  sprintf((char *)at_cmd, "AT+CIPSTART=\"TCP\",\"%s\",%lu%s",
+  sprintf((char *)at_cmd, "AT+CIPSTART=\"SSL\",\"%s\",%lu%s",
           (char *)connection_info->ip_address, connection_info->port, AT_CMD_TERMINATOR );
 
   /* Send the CIPSTART command */
@@ -593,7 +593,7 @@ esp32_status_t esp32_send_data(uint8_t *buffer, uint32_t length) {
   esp32_status_t ret = ESP32_OK;
 
   if ( buffer != NULL ) {
-    // uint32_t tickStart;
+    uint32_t tickStart;
     /* Construct the CIPSEND command */
     memset(at_cmd, '\0', MAX_AT_CMD_SIZE);
     sprintf((char *)at_cmd, "AT+CIPSEND=%lu%s", length, AT_CMD_TERMINATOR );
@@ -609,14 +609,16 @@ esp32_status_t esp32_send_data(uint8_t *buffer, uint32_t length) {
       return ESP32_ERROR;
     }
 
-    /* Wait before sending data. */
-    //    tickStart = HAL_GetTick();
-    //    while (HAL_GetTick() - tickStart < 500)
-    //    {
-    //    }
+
 
     /* Send the data */
     ret = run_at_cmd(buffer, length, (uint8_t *)AT_SEND_OK_STRING);
+
+    /* Wait before sending data. */
+     tickStart = HAL_GetTick();
+     while (HAL_GetTick() - tickStart < 1000)
+     {
+     }
   }
 
   return ret;
@@ -717,7 +719,7 @@ static esp32_status_t recv_data(uint8_t *buffer, uint32_t length,
        - Mark end of the chunk.
        - Repeat steps above until no more data is available. */
   while ( true ) {
-    if ( esp32_io_recv(&rx_char, 1) != 0 ) {
+    if ( esp32_io_recv_nb(&rx_char, 1) != 0 ) {
       /* The data chunk starts with +IPD,<chunk length>: */
       if ( new_chunk == ESP32_TRUE ) {
         /* Read the next length_value bytes as part from the actual data. */

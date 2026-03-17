@@ -1,0 +1,12 @@
+C:/Users/bhara/STM32CubeIDE/aws-iot-stm32/projects/002_OTA_Firmware_Update/IOT_SDK/Thirdparty/aws-iot-device-sdk-libraries/3rdparty/tinycbor/src/cbor.h:226:27:cbor_encode_text_stringz	1
+C:/Users/bhara/STM32CubeIDE/aws-iot-stm32/projects/002_OTA_Firmware_Update/IOT_SDK/Thirdparty/aws-iot-device-sdk-libraries/3rdparty/tinycbor/src/cbor.h:255:24:cbor_encoder_get_buffer_size	1
+C:/Users/bhara/STM32CubeIDE/aws-iot-stm32/projects/002_OTA_Firmware_Update/IOT_SDK/Thirdparty/aws-iot-device-sdk-libraries/3rdparty/tinycbor/src/cbor.h:311:26:_cbor_value_extract_int64_helper	2
+C:/Users/bhara/STM32CubeIDE/aws-iot-stm32/projects/002_OTA_Firmware_Update/IOT_SDK/Thirdparty/aws-iot-device-sdk-libraries/3rdparty/tinycbor/src/cbor.h:319:26:cbor_value_get_type	1
+C:/Users/bhara/STM32CubeIDE/aws-iot-stm32/projects/002_OTA_Firmware_Update/IOT_SDK/Thirdparty/aws-iot-device-sdk-libraries/3rdparty/tinycbor/src/cbor.h:349:22:cbor_value_is_integer	1
+C:/Users/bhara/STM32CubeIDE/aws-iot-stm32/projects/002_OTA_Firmware_Update/IOT_SDK/Thirdparty/aws-iot-device-sdk-libraries/3rdparty/tinycbor/src/cbor.h:379:27:cbor_value_get_int	2
+C:/Users/bhara/STM32CubeIDE/aws-iot-stm32/projects/002_OTA_Firmware_Update/IOT_SDK/Thirdparty/aws-iot-device-sdk-libraries/3rdparty/tinycbor/src/cbor.h:406:22:cbor_value_is_byte_string	1
+C:/Users/bhara/STM32CubeIDE/aws-iot-stm32/projects/002_OTA_Firmware_Update/IOT_SDK/Thirdparty/aws-iot-device-sdk-libraries/3rdparty/tinycbor/src/cbor.h:437:27:cbor_value_copy_byte_string	1
+C:/Users/bhara/STM32CubeIDE/aws-iot-stm32/projects/002_OTA_Firmware_Update/IOT_SDK/Thirdparty/aws-iot-device-sdk-libraries/3rdparty/tinycbor/src/cbor.h:462:22:cbor_value_is_map	1
+../IOT_SDK/Thirdparty/aws-iot-device-sdk-libraries/aws/aws-iot-core-mqtt-file-streams/source/MQTTFileDownloader_cbor.c:35:18:checkDataType	2
+../IOT_SDK/Thirdparty/aws-iot-device-sdk-libraries/aws/aws-iot-core-mqtt-file-streams/source/MQTTFileDownloader_cbor.c:63:6:CBOR_Decode_GetStreamResponseMessage	25
+../IOT_SDK/Thirdparty/aws-iot-device-sdk-libraries/aws/aws-iot-core-mqtt-file-streams/source/MQTTFileDownloader_cbor.c:221:6:CBOR_Encode_GetStreamRequestMessage	20

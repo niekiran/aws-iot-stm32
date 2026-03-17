@@ -44,7 +44,7 @@ esp32_status_t esp32_init(void) {
     return ESP32_ERROR;
   }
 
-#ifndef OTA_APP
+#ifndef USE_OTA
   /* Switch off the echo mode */
   /* Construct the command */
   memset(at_cmd, '\0', MAX_AT_CMD_SIZE);
@@ -67,6 +67,7 @@ esp32_status_t esp32_init(void) {
   /* Send the command */
   ret = run_at_cmd((uint8_t *)at_cmd, strlen((char *)at_cmd),
                     (uint8_t *)AT_OK_STRING);
+
 #endif
   return ret;
 }
@@ -215,7 +216,7 @@ esp32_status_t esp32_establish_connection(const esp32_connection_info_t *connect
 
   /* Construct the CIPSTART command */
   memset(at_cmd, '\0', MAX_AT_CMD_SIZE);
-  sprintf((char *)at_cmd, "AT+CIPSTART=\"TCP\",\"%s\",%lu%s",
+  sprintf((char *)at_cmd, "AT+CIPSTART=\"SSL\",\"%s\",%lu%s",
           (char *)connection_info->ip_address, connection_info->port, AT_CMD_TERMINATOR );
 
   /* Send the CIPSTART command */
@@ -477,7 +478,7 @@ esp32_status_t esp32_recv_mqtt_data(mqtt_receive_t *p_receive_info) {
 
   return ret;
 }
-#if 1
+
 /**
  * @brief Receives MQTT publish message from the WiFi module.
  * @param p_receive_info Pointer to the MQTT receive info structure.
@@ -574,129 +575,13 @@ static esp32_status_t recv_mqtt_data(mqtt_receive_t *p_receive_info) {
     }
   }
 
+//  if (p_receive_info->payload_length >1397){// ||
+//    //  p_receive_info->payload_length == 422){
+//    while(1);
+//  }
   return ESP32_OK;
 }
-#else
 
-static esp32_status_t recv_mqtt_data(mqtt_receive_t *p_receive_info) {
-    static char last_topic[80+1] = {0};
-    static uint32_t last_payload_offset = 0;
-    static esp32_boolean buffering = ESP32_FALSE;
-
-    uint8_t rx_char;
-    uint32_t idx = 0;
-    char length_string[10] = {0};
-    uint32_t length_value = 0;
-    uint8_t i = 0;
-    esp32_boolean new_chunk = ESP32_FALSE;
-
-    assert(p_receive_info != NULL);
-    assert(p_receive_info->p_topic != NULL);
-    assert(p_receive_info->p_payload != NULL);
-
-    memset(rx_buffer, 0, MAX_BUFFER_SIZE);
-
-    while (true) {
-        if (esp32_io_recv_nb(&rx_char, 1) != 0) {
-            if (new_chunk == ESP32_TRUE) {
-                if (length_value > 0) {
-                    if ((last_payload_offset + p_receive_info->payload_length) < MAX_BUFFER_SIZE) {
-                        p_receive_info->p_payload[last_payload_offset++] = rx_char;
-                    }
-                    length_value--;
-                } else {
-                    new_chunk = ESP32_FALSE;
-                    break;
-                }
-            }
-
-            if (idx < MAX_BUFFER_SIZE) {
-                rx_buffer[idx++] = rx_char;
-            } else {
-                return ESP32_ERROR;
-            }
-        } else {
-            if (new_chunk == ESP32_TRUE && length_value != 0) {
-                return ESP32_ERROR;
-            }
-            break;
-        }
-
-        // Match incoming MQTT message
-        if ((strstr((char *)rx_buffer, "+MQTTSUBRECV:0,") != NULL) && (new_chunk == ESP32_FALSE)) {
-            // Skip '"' before topic
-            esp32_io_recv(&rx_char, 1);
-
-            char current_topic[80 + 1] = {0};
-            size_t topic_len = 0;
-
-            while (esp32_io_recv_nb(&rx_char, 1) && rx_char != '"' && topic_len < 80) {
-                current_topic[topic_len++] = rx_char;
-            }
-            current_topic[topic_len] = '\0';
-
-            // Skip separator
-            esp32_io_recv(&rx_char, 1);
-
-            // Read payload length
-            i = 0;
-            memset(length_string, 0, sizeof(length_string));
-            while (esp32_io_recv_nb(&rx_char, 1) && rx_char != ',' && i < sizeof(length_string) - 1) {
-                length_string[i++] = rx_char;
-            }
-            length_string[i] = '\0';
-
-            length_value = atoi(length_string);
-            if (length_value > MAX_BUFFER_SIZE - last_payload_offset) {
-                return ESP32_ERROR;
-            }
-
-            // If topic changed while buffering, finalize old message and return it
-            if (buffering == ESP32_TRUE && strcmp(current_topic, last_topic) != 0) {
-                // Return previous message
-                memcpy(p_receive_info->p_topic, last_topic, strlen(last_topic));
-                p_receive_info->topic_length = strlen(last_topic);
-                p_receive_info->payload_length = last_payload_offset;
-
-                // Prepare for next round
-                memset(last_topic, 0, sizeof(last_topic));
-                last_payload_offset = 0;
-                buffering = ESP32_FALSE;
-
-                // Rewind current read position to re-process this new chunk on next call
-                return ESP32_OK;
-            }
-
-            // Same topic - continue appending
-            strcpy(last_topic, current_topic);
-            new_chunk = ESP32_TRUE;
-            buffering = ESP32_TRUE;
-        }
-
-        // Handle "ERROR"
-        if (strstr((char *)rx_buffer, "ERROR") != NULL) {
-            return ESP32_ERROR;
-        }
-    }
-
-    // Finished processing a full payload
-    if (new_chunk == ESP32_FALSE && buffering == ESP32_TRUE && length_value == 0) {
-        // Return buffered message
-        memcpy(p_receive_info->p_topic, last_topic, strlen(last_topic));
-        p_receive_info->topic_length = strlen(last_topic);
-        p_receive_info->payload_length = last_payload_offset;
-
-        // Reset buffer
-        memset(last_topic, 0, sizeof(last_topic));
-        last_payload_offset = 0;
-        buffering = ESP32_FALSE;
-
-        return ESP32_OK;
-    }
-
-    return ESP32_ERROR;  // Default fallback
-}
-#endif
 /**
  * @brief  Send data over the wifi connection.
  * @param  buffer: the buffer to send
@@ -708,7 +593,7 @@ esp32_status_t esp32_send_data(uint8_t *buffer, uint32_t length) {
   esp32_status_t ret = ESP32_OK;
 
   if ( buffer != NULL ) {
-    // uint32_t tickStart;
+    uint32_t tickStart;
     /* Construct the CIPSEND command */
     memset(at_cmd, '\0', MAX_AT_CMD_SIZE);
     sprintf((char *)at_cmd, "AT+CIPSEND=%lu%s", length, AT_CMD_TERMINATOR );
@@ -724,14 +609,16 @@ esp32_status_t esp32_send_data(uint8_t *buffer, uint32_t length) {
       return ESP32_ERROR;
     }
 
-    /* Wait before sending data. */
-    //    tickStart = HAL_GetTick();
-    //    while (HAL_GetTick() - tickStart < 500)
-    //    {
-    //    }
+
 
     /* Send the data */
     ret = run_at_cmd(buffer, length, (uint8_t *)AT_SEND_OK_STRING);
+
+    /* Wait before sending data. */
+     tickStart = HAL_GetTick();
+     while (HAL_GetTick() - tickStart < 1000)
+     {
+     }
   }
 
   return ret;
@@ -832,7 +719,7 @@ static esp32_status_t recv_data(uint8_t *buffer, uint32_t length,
        - Mark end of the chunk.
        - Repeat steps above until no more data is available. */
   while ( true ) {
-    if ( esp32_io_recv(&rx_char, 1) != 0 ) {
+    if ( esp32_io_recv_nb(&rx_char, 1) != 0 ) {
       /* The data chunk starts with +IPD,<chunk length>: */
       if ( new_chunk == ESP32_TRUE ) {
         /* Read the next length_value bytes as part from the actual data. */

@@ -1,0 +1,4 @@
+../IOT_SDK/Thirdparty/aws-iot-device-sdk-libraries/aws/aws-iot-core-mqtt-file-streams/source/MQTTFileDownloader_base64.c:187:23:preprocessBase64Index	64	static
+../IOT_SDK/Thirdparty/aws-iot-device-sdk-libraries/aws/aws-iot-core-mqtt-file-streams/source/MQTTFileDownloader_base64.c:257:13:updateBase64DecodingBuffer	32	static
+../IOT_SDK/Thirdparty/aws-iot-device-sdk-libraries/aws/aws-iot-core-mqtt-file-streams/source/MQTTFileDownloader_base64.c:309:23:decodeBase64IndexBuffer	48	static
+../IOT_SDK/Thirdparty/aws-iot-device-sdk-libraries/aws/aws-iot-core-mqtt-file-streams/source/MQTTFileDownloader_base64.c:403:16:base64_Decode	72	static
