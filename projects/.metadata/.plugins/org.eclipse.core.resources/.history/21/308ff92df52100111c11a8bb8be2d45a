@@ -1,2 +1,0 @@
-../Core/Src/parser.c:23:14:find_json_field	24	static
-../Core/Src/parser.c:40:6:parse_titles_and_abstracts	32	static

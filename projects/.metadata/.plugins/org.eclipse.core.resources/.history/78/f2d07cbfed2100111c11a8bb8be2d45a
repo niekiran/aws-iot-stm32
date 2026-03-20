@@ -1,3 +1,0 @@
-../Core/Src/payment_data_parser.c:27:12:parse_iso8601_utc	40	static
-../Core/Src/payment_data_parser.c:45:13:apply_utc_offset_hhmm	24	static
-../Core/Src/payment_data_parser.c:76:8:parse_payment_data	184	static
