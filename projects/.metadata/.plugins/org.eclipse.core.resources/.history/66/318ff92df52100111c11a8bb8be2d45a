@@ -1,6 +1,0 @@
-../Core/Src/scroll.c:82:6:scroll_set_section	2
-../Core/Src/scroll.c:98:13:draw_header	1
-../Core/Src/scroll.c:118:13:build_scroll_string	9
-../Core/Src/scroll.c:179:13:draw_visible_text	9
-../Core/Src/scroll.c:228:6:scroll_reinit	1
-../Core/Src/scroll.c:246:6:scroll_update	5

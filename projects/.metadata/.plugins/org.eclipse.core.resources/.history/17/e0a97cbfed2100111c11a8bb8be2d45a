@@ -1,3 +1,0 @@
-../Core/Src/payment_app.c:43:6:display_qr	32	static
-../Core/Src/payment_app.c:73:6:display_payments	88	static
-../Core/Src/payment_app.c:103:6:handle_payment_info	168	static

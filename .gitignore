@@ -12,4 +12,4 @@
 test-results*.xml
 
 # Eclipse workspace metadata (scoped)
-projects-and-examples/.metadata/
+projects/.metadata/
