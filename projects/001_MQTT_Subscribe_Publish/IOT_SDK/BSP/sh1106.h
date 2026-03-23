@@ -24,6 +24,38 @@
 // Framebuffer size in bytes: 1 bit per pixel => (W * H) / 8
 #define SH1106_BUFFER_SIZE (SH1106_WIDTH * SH1106_HEIGHT / 8)
 
+
+/*
+ * This driver can be used with both SH1106 and SSD1306 OLED controllers.
+ *
+ * The initialization code can remain the same.
+ * Only the display RAM write column start is different:
+ *
+ * SH1106  : framebuffer data starts from column offset 2
+ * SSD1306 : framebuffer data starts from column 0
+ *
+ * Select the controller used in your OLED module below.
+ *
+ * Example:
+ * - For SH1106 OLED, use:  #define DISPLAY_CONTROLLER DISPLAY_CTRL_SH1106
+ * - For SSD1306 OLED, use: #define DISPLAY_CONTROLLER DISPLAY_CTRL_SSD1306
+ */
+
+#define DISPLAY_CTRL_SH1106   0
+#define DISPLAY_CTRL_SSD1306  1
+
+#define DISPLAY_CONTROLLER    DISPLAY_CTRL_SH1106
+
+#if DISPLAY_CONTROLLER == DISPLAY_CTRL_SH1106
+    #define DISPLAY_COLUMN_OFFSET_LOWER   0x02
+    #define DISPLAY_COLUMN_OFFSET_UPPER   0x10
+#elif DISPLAY_CONTROLLER == DISPLAY_CTRL_SSD1306
+    #define DISPLAY_COLUMN_OFFSET_LOWER   0x00
+    #define DISPLAY_COLUMN_OFFSET_UPPER   0x10
+#else
+    #error "Invalid DISPLAY_CONTROLLER selected"
+#endif
+
 /**
  * @brief Driver return/status codes.
  */

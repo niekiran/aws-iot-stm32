@@ -147,8 +147,8 @@ sh1106_t sh1106_update_screen(void* sh_handle) {
   for (uint8_t page = 0; page < 8; page++) {
     // Set page and column address
     if (sh1106_write_command(sh_handle, 0xB0 + page) != SH1106_OK) return SH1106_ERR;
-    if (sh1106_write_command(sh_handle, 0x02) != SH1106_OK) return SH1106_ERR;
-    if (sh1106_write_command(sh_handle, 0x10) != SH1106_OK) return SH1106_ERR;
+    if (sh1106_write_command(sh_handle, DISPLAY_COLUMN_OFFSET_LOWER) != SH1106_OK) return SH1106_ERR;
+    if (sh1106_write_command(sh_handle, DISPLAY_COLUMN_OFFSET_UPPER) != SH1106_OK) return SH1106_ERR;
 
     // Write buffer to display
     if (sh1106_write_data(sh_handle, &SH1106.Buffer[SH1106_WIDTH * page], SH1106_WIDTH) != SH1106_OK) {
